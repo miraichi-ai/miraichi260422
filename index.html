@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>100日達成おめでとう</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=RocknRoll+One&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Serif+JP:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #f7c948;
+    --pink: #ff5fb0;
+    --cyan: #4ecdc4;
+    --violet: #9b6dff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+    color: #fff;
+    background:
+      radial-gradient(ellipse 100% 70% at 50% 0%, #2a0a4a 0%, transparent 55%),
+      radial-gradient(ellipse 80% 60% at 10% 100%, #4a0a3e 0%, transparent 55%),
+      radial-gradient(ellipse 80% 60% at 90% 100%, #0a1a4a 0%, transparent 55%),
+      #050210;
+  }
+  /* Grain overlay */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.08 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    opacity: 0.6;
+    z-index: 5;
+  }
+  #canvas-container {
+    position: fixed; inset: 0;
+    z-index: 1;
+  }
+  /* Top banner */
+  #banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    z-index: 20;
+    pointer-events: none;
+    padding: 24px 16px 0;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    padding: 4px 16px;
+    border: 1px solid rgba(247, 201, 72, 0.4);
+    border-radius: 100px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-family: 'RocknRoll One', sans-serif;
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    background: linear-gradient(90deg, #f7c948 0%, #ff5fb0 45%, #9b6dff 80%, #4ecdc4 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px rgba(247, 201, 72, 0.3));
+  }
+  h1 .accent {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 700;
+    font-style: italic;
+  }
+  .subtitle {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.15em;
+    margin-top: 6px;
+  }
+  /* Side label */
+  .side-label {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 10px;
+    letter-spacing: 0.6em;
+    color: rgba(255,255,255,0.25);
+    z-index: 10;
+    pointer-events: none;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .side-label.left { left: 20px; }
+  .side-label.right { right: 20px; }
+  /* Counter */
+  #counter {
+    position: fixed;
+    top: 110px; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Noto Serif JP', serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: rgba(247,201,72,0.7);
+    z-index: 10;
+    pointer-events: none;
+  }
+  /* Input dock */
+  #dock {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px 8px 18px;
+    background: rgba(12, 4, 28, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(247, 201, 72, 0.25);
+    border-radius: 100px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.04) inset,
+      0 10px 40px rgba(155, 109, 255, 0.15),
+      0 0 80px rgba(247, 201, 72, 0.08);
+    width: min(560px, calc(100vw - 32px));
+  }
+  #dock::before {
+    content: "♡";
+    color: var(--pink);
+    font-size: 14px;
+    opacity: 0.8;
+  }
+  #message-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+    padding: 8px 0;
+    min-width: 0;
+  }
+  #message-input::placeholder {
+    color: rgba(255,255,255,0.38);
+    font-style: italic;
+    font-family: 'Noto Serif JP', serif;
+  }
+  #send-btn {
+    flex-shrink: 0;
+    font-family: 'RocknRoll One', sans-serif;
+    font-size: 13px;
+    color: #140428;
+    background: linear-gradient(135deg, #ffd95c 0%, #ff5fb0 100%);
+    border: none;
+    padding: 9px 20px;
+    border-radius: 100px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 20px rgba(255, 95, 176, 0.4);
+  }
+  #send-btn:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 6px 24px rgba(255, 95, 176, 0.5);
+  }
+  #send-btn:active { transform: scale(0.98); }
+  /* Corner decoration */
+  .corner {
+    position: fixed;
+    width: 40px; height: 40px;
+    border: 1px solid rgba(247, 201, 72, 0.3);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .corner.tl { top: 16px; left: 16px; border-right: none; border-bottom: none; }
+  .corner.tr { top: 16px; right: 16px; border-left: none; border-bottom: none; }
+  .corner.bl { bottom: 16px; left: 16px; border-right: none; border-top: none; }
+  .corner.br { bottom: 16px; right: 16px; border-left: none; border-top: none; }
+
+  @media (max-width: 600px) {
+    #banner { padding-top: 16px; }
+    .badge { font-size: 10px; padding: 3px 12px; }
+    .side-label { display: none; }
+    .corner { width: 24px; height: 24px; }
+  }
+</style>
+</head>
+<body>
+<div id="canvas-container"></div>
+
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<div class="side-label left">Celebration</div>
+<div class="side-label right">100 Days</div>
+
+<div id="banner">
+  <span class="badge">A Night of Gratitude</span>
+  <h1>100日達成、<span class="accent">おめでとう</span></h1>
+  <p class="subtitle">みんなのメッセージが、夜空を舞います</p>
+</div>
+<div id="counter">00 MESSAGES</div>
+
+<div id="dock">
+  <input id="message-input" type="text" maxlength="80" placeholder="お祝いのひとことを…" autocomplete="off">
+  <button id="send-btn">SEND</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =========================================================
+   Scene Setup
+   ========================================================= */
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x050210, 0.018);
+
+const camera = new THREE.PerspectiveCamera(
+  55, window.innerWidth / window.innerHeight, 0.1, 300
+);
+camera.position.set(0, 0, 18);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+/* =========================================================
+   Star Field (background twinkling stars)
+   ========================================================= */
+const starCount = 500;
+const starGeo = new THREE.BufferGeometry();
+const starPos = new Float32Array(starCount * 3);
+const starColors = new Float32Array(starCount * 3);
+for (let i = 0; i < starCount; i++) {
+  const r = 40 + Math.random() * 50;
+  const theta = Math.random() * Math.PI * 2;
+  const phi = Math.acos(2 * Math.random() - 1);
+  starPos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+  starPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+  starPos[i*3+2] = r * Math.cos(phi) - 20;
+  const c = 0.6 + Math.random() * 0.4;
+  starColors[i*3]   = c;
+  starColors[i*3+1] = c * (0.85 + Math.random() * 0.15);
+  starColors[i*3+2] = c * (0.7 + Math.random() * 0.3);
+}
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+const starMat = new THREE.PointsMaterial({
+  size: 0.25,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.9,
+  sizeAttenuation: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+});
+const stars = new THREE.Points(starGeo, starMat);
+scene.add(stars);
+
+/* =========================================================
+   Confetti Particles (colorful celebration)
+   ========================================================= */
+const confettiCount = 180;
+const confettiGeo = new THREE.BufferGeometry();
+const confettiPos = new Float32Array(confettiCount * 3);
+const confettiColors = new Float32Array(confettiCount * 3);
+const confettiVel = [];
+
+const paletteColors = [
+  [0.97, 0.79, 0.28], // gold
+  [1.0,  0.37, 0.69], // pink
+  [0.31, 0.80, 0.77], // cyan
+  [0.61, 0.43, 1.0],  // violet
+  [1.0,  1.0,  0.95], // white
+];
+
+for (let i = 0; i < confettiCount; i++) {
+  confettiPos[i*3]   = (Math.random() - 0.5) * 50;
+  confettiPos[i*3+1] = (Math.random() - 0.5) * 30;
+  confettiPos[i*3+2] = (Math.random() - 0.5) * 30 - 5;
+  const c = paletteColors[Math.floor(Math.random() * paletteColors.length)];
+  confettiColors[i*3] = c[0];
+  confettiColors[i*3+1] = c[1];
+  confettiColors[i*3+2] = c[2];
+  confettiVel.push({
+    x: (Math.random() - 0.5) * 0.015,
+    y: -0.005 - Math.random() * 0.02,
+    z: (Math.random() - 0.5) * 0.01,
+    phase: Math.random() * Math.PI * 2,
+  });
+}
+confettiGeo.setAttribute('position', new THREE.BufferAttribute(confettiPos, 3));
+confettiGeo.setAttribute('color', new THREE.BufferAttribute(confettiColors, 3));
+const confettiMat = new THREE.PointsMaterial({
+  size: 0.22,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.95,
+  sizeAttenuation: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+});
+const confetti = new THREE.Points(confettiGeo, confettiMat);
+scene.add(confetti);
+
+/* =========================================================
+   Central glow orb (depth anchor)
+   ========================================================= */
+const glowCanvas = document.createElement('canvas');
+glowCanvas.width = glowCanvas.height = 256;
+const gctx = glowCanvas.getContext('2d');
+const grad = gctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+grad.addColorStop(0,   'rgba(247,201,72,0.6)');
+grad.addColorStop(0.4, 'rgba(255,95,176,0.25)');
+grad.addColorStop(1,   'rgba(0,0,0,0)');
+gctx.fillStyle = grad;
+gctx.fillRect(0, 0, 256, 256);
+const glowTex = new THREE.CanvasTexture(glowCanvas);
+const glowMat = new THREE.SpriteMaterial({
+  map: glowTex,
+  blending: THREE.AdditiveBlending,
+  transparent: true,
+  depthWrite: false,
+});
+const glowSprite = new THREE.Sprite(glowMat);
+glowSprite.scale.set(18, 18, 1);
+glowSprite.position.set(0, 0, -4);
+scene.add(glowSprite);
+
+/* =========================================================
+   Message Texture Generator
+   ========================================================= */
+function createTextTexture(text) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Split into lines (Japanese-friendly character wrap)
+  const maxChars = 16;
+  const rawLines = text.split(/\r?\n/);
+  const lines = [];
+  for (const raw of rawLines) {
+    if (!raw) { lines.push(''); continue; }
+    const chars = Array.from(raw);
+    if (chars.length <= maxChars) {
+      lines.push(raw);
+    } else {
+      let cur = '';
+      for (const ch of chars) {
+        cur += ch;
+        if (Array.from(cur).length >= maxChars) {
+          lines.push(cur);
+          cur = '';
+        }
+      }
+      if (cur) lines.push(cur);
+    }
+  }
+  if (lines.length === 0) lines.push(text);
+
+  const fontSize = 88;
+  const lineHeight = fontSize * 1.35;
+  const padding = 72;
+  const fontFamily = "'Zen Kaku Gothic New', 'Hiragino Sans', 'Yu Gothic', sans-serif";
+  const fontSpec = `900 ${fontSize}px ${fontFamily}`;
+
+  // Measure
+  ctx.font = fontSpec;
+  let maxW = 0;
+  for (const line of lines) {
+    const m = ctx.measureText(line);
+    if (m.width > maxW) maxW = m.width;
+  }
+
+  canvas.width = Math.min(Math.max(Math.ceil(maxW) + padding * 2, 400), 2048);
+  canvas.height = Math.ceil(lines.length * lineHeight) + padding * 2;
+
+  // Reset context after resize
+  ctx.font = fontSpec;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const cx = canvas.width / 2;
+
+  // 1. Outer soft glow
+  ctx.save();
+  ctx.shadowColor = 'rgba(255, 215, 100, 0.85)';
+  ctx.shadowBlur = 50;
+  ctx.fillStyle = 'rgba(255, 220, 140, 0.35)';
+  lines.forEach((line, i) => {
+    const y = padding + lineHeight * (i + 0.5);
+    ctx.fillText(line, cx, y);
+  });
+  ctx.restore();
+
+  // 2. Pink tinted glow
+  ctx.save();
+  ctx.shadowColor = 'rgba(255, 95, 176, 0.7)';
+  ctx.shadowBlur = 28;
+  ctx.fillStyle = 'rgba(255, 120, 200, 0.3)';
+  lines.forEach((line, i) => {
+    const y = padding + lineHeight * (i + 0.5);
+    ctx.fillText(line, cx, y);
+  });
+  ctx.restore();
+
+  // 3. Main gradient fill
+  ctx.save();
+  ctx.shadowColor = 'rgba(20, 0, 40, 0.6)';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetY = 4;
+  const fill = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+  fill.addColorStop(0,    '#fff4b8');
+  fill.addColorStop(0.35, '#ffd45c');
+  fill.addColorStop(0.65, '#ff7ac4');
+  fill.addColorStop(1,    '#a685ff');
+  ctx.fillStyle = fill;
+  lines.forEach((line, i) => {
+    const y = padding + lineHeight * (i + 0.5);
+    ctx.fillText(line, cx, y);
+  });
+  ctx.restore();
+
+  // 4. Highlight (upper shine)
+  ctx.save();
+  const highlight = ctx.createLinearGradient(0, 0, 0, canvas.height * 0.55);
+  highlight.addColorStop(0,   'rgba(255, 255, 255, 0.55)');
+  highlight.addColorStop(0.8, 'rgba(255, 255, 255, 0)');
+  ctx.fillStyle = highlight;
+  ctx.globalCompositeOperation = 'source-atop';
+  lines.forEach((line, i) => {
+    const y = padding + lineHeight * (i + 0.5);
+    ctx.fillText(line, cx, y);
+  });
+  ctx.restore();
+
+  // 5. Thin stroke for definition
+  ctx.save();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  lines.forEach((line, i) => {
+    const y = padding + lineHeight * (i + 0.5);
+    ctx.strokeText(line, cx, y);
+  });
+  ctx.restore();
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  texture.needsUpdate = true;
+  return { texture, width: canvas.width, height: canvas.height };
+}
+
+/* =========================================================
+   Message System
+   ========================================================= */
+const activeMessages = [];
+let messageCounter = 0;
+const counterEl = document.getElementById('counter');
+
+function updateCounter() {
+  const n = messageCounter.toString().padStart(2, '0');
+  counterEl.textContent = `${n} MESSAGES`;
+}
+
+function spawnMessage(text) {
+  const { texture, width, height } = createTextTexture(text);
+  const aspect = width / height;
+  const planeH = 2.6 + Math.random() * 0.5;
+  const planeW = planeH * aspect;
+
+  const geo = new THREE.PlaneGeometry(planeW, planeH);
+  const mat = new THREE.MeshBasicMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 0,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+
+  // Spawn from below, wide horizontal spread
+  const startX = (Math.random() - 0.5) * 22;
+  const startY = -14 - Math.random() * 4;
+  const startZ = (Math.random() - 0.5) * 14 - 2;
+  mesh.position.set(startX, startY, startZ);
+
+  messageCounter++;
+  const id = messageCounter;
+  const msg = {
+    id,
+    mesh,
+    age: 0,
+    lifetime: 18 + Math.random() * 5,
+    baseX: startX,
+    baseZ: startZ,
+    driftX: (Math.random() - 0.5) * 0.4,
+    driftZ: (Math.random() - 0.5) * 0.2,
+    riseSpeed: 0.8 + Math.random() * 0.5,
+    swayFreq: 0.3 + Math.random() * 0.4,
+    swayAmp: 0.6 + Math.random() * 0.8,
+    phase: Math.random() * Math.PI * 2,
+    tiltAmp: (Math.random() - 0.5) * 0.15,
+    rotSpeed: (Math.random() - 0.5) * 0.15,
+  };
+
+  scene.add(mesh);
+  activeMessages.push(msg);
+  updateCounter();
+}
+
+/* =========================================================
+   Sample Messages (demo content)
+   ========================================================= */
+const sampleMessages = [
+  '100日達成\nおめでとう🎉',
+  '継続は力なり✨',
+  'すごい！',
+  '毎日の積み重ね、本当にすごい',
+  'いつも刺激をもらってます',
+  'ついにやったね！',
+  'おめでとうございます',
+  '次は200日目指そう',
+  '応援してます',
+  'お疲れさまでした',
+  '素晴らしい取り組み',
+  '学ばせてもらってます',
+  'GASマスター爆誕🚀',
+  '毎日楽しみにしてました',
+  '100日間、ありがとう',
+  '尊敬します',
+  'これからも楽しみ',
+  '乾杯🥂',
+];
+
+// Wait for fonts before first render
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => {
+    sampleMessages.forEach((msg, i) => {
+      setTimeout(() => spawnMessage(msg), i * 700);
+    });
+  });
+} else {
+  setTimeout(() => {
+    sampleMessages.forEach((msg, i) => {
+      setTimeout(() => spawnMessage(msg), i * 700);
+    });
+  }, 500);
+}
+
+/* =========================================================
+   UI Input
+   ========================================================= */
+const messageInput = document.getElementById('message-input');
+const sendBtn = document.getElementById('send-btn');
+function submitMessage() {
+  const v = messageInput.value.trim();
+  if (!v) return;
+  spawnMessage(v);
+  messageInput.value = '';
+  messageInput.blur();
+}
+sendBtn.addEventListener('click', submitMessage);
+messageInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); submitMessage(); }
+});
+
+/* =========================================================
+   Animation Loop
+   ========================================================= */
+const clock = new THREE.Clock();
+const tmpVec = new THREE.Vector3();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.getElapsedTime();
+
+  // Stars: slow rotation + subtle twinkle via opacity
+  stars.rotation.y += 0.0002;
+  stars.rotation.x = Math.sin(t * 0.03) * 0.05;
+  starMat.opacity = 0.75 + Math.sin(t * 1.5) * 0.15;
+
+  // Confetti: gentle drift
+  const cpos = confetti.geometry.attributes.position.array;
+  for (let i = 0; i < confettiCount; i++) {
+    cpos[i*3]   += confettiVel[i].x + Math.sin(t * 0.5 + confettiVel[i].phase) * 0.003;
+    cpos[i*3+1] += confettiVel[i].y;
+    cpos[i*3+2] += confettiVel[i].z;
+    if (cpos[i*3+1] < -18) {
+      cpos[i*3+1] = 18;
+      cpos[i*3]   = (Math.random() - 0.5) * 50;
+    }
+  }
+  confetti.geometry.attributes.position.needsUpdate = true;
+
+  // Glow orb: gentle pulse
+  const pulse = 1 + Math.sin(t * 0.8) * 0.08;
+  glowSprite.scale.set(18 * pulse, 18 * pulse, 1);
+
+  // Messages
+  for (let i = activeMessages.length - 1; i >= 0; i--) {
+    const m = activeMessages[i];
+    m.age += dt;
+
+    // Rise
+    m.mesh.position.y = (-14) + m.riseSpeed * m.age * 2.2;
+    // Sway in X and Z
+    m.mesh.position.x = m.baseX + Math.sin(t * m.swayFreq + m.phase) * m.swayAmp + m.driftX * m.age * 0.5;
+    m.mesh.position.z = m.baseZ + Math.cos(t * m.swayFreq * 0.7 + m.phase) * 0.6 + m.driftZ * m.age * 0.3;
+
+    // Billboard to camera with a gentle tilt
+    tmpVec.copy(camera.position);
+    m.mesh.lookAt(tmpVec);
+    m.mesh.rotation.z = Math.sin(t * 0.6 + m.phase) * m.tiltAmp + m.rotSpeed * 0.3;
+
+    // Fade in, hold, fade out
+    const fadeIn = Math.min(m.age / 1.2, 1);
+    const fadeOut = Math.min((m.lifetime - m.age) / 2.5, 1);
+    const mainOpacity = Math.max(0, Math.min(fadeIn, fadeOut));
+    m.mesh.material.opacity = mainOpacity;
+
+    // Scale pop on entry
+    const pop = m.age < 0.6
+      ? 0.4 + (m.age / 0.6) * 0.6
+      : 1;
+    m.mesh.scale.setScalar(pop);
+
+    // Dispose when done
+    if (m.age > m.lifetime) {
+      scene.remove(m.mesh);
+      m.mesh.material.map.dispose();
+      m.mesh.material.dispose();
+      m.mesh.geometry.dispose();
+      activeMessages.splice(i, 1);
+    }
+  }
+
+  // Camera: very slow orbital drift
+  camera.position.x = Math.sin(t * 0.05) * 1.5;
+  camera.position.y = Math.cos(t * 0.07) * 0.8;
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+}
+animate();
+
+/* =========================================================
+   Resize
+   ========================================================= */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
